@@ -1,28 +1,33 @@
 from argparse import ArgumentParser, Namespace
 
-from rvwr.models.pull_request import PRLink, PullRequest
 from rvwr.git_services.github import GitHubService
+from rvwr.models.pull_request import PullRequest
+from rvwr.models.repository import GitHost, Repository
 
 
 def parse_args() -> Namespace:
     parser = ArgumentParser(
         description="Customizable LLM-based PR Reviewer that understands your repo"
     )
-    parser.add_argument("pr_link", type=str, help="Link to the PR")
+    parser.add_argument("--repo", type=str, help="Link to the repo")
+    parser.add_argument("--pr", type=int, help="PR number")
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
 
-    pr_link = PRLink(args.pr_link)
-    pr_link.validate()
-    pull_request = PullRequest.from_link(pr_link)
+    repo = Repository.from_url(args.repo)
+    pr = PullRequest(repository=repo, number=args.pr)
+
+    match repo.host:
+        # only github for now
+        case GitHost.GITHUB:
+            service = GitHubService()
 
     # fetch diffs for PR
-    service = GitHubService()
-    diffs = service.get_diffs(pull_request)
-    print(diffs)
+    diff = service.get_diff(pr)
+    print(diff)
 
     # for every diff, get a comment from LLM
 
