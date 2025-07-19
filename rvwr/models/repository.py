@@ -3,10 +3,6 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 
-@dataclass
-class RepositoryId:
-    value: str
-
 class UrlType(StrEnum):
     HTTPS = "HTTPS"
     SSH = "SSH"
@@ -37,5 +33,4 @@ class RepoUrl:
 
 @dataclass
 class Repository:
-    id: RepositoryId
     url: RepoUrl
